@@ -13,6 +13,9 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   userRole: "guest",
-  setAuth: (isAuthenticated, userRole) => set({ isAuthenticated, userRole }),
+  setAuth: (isAuthenticated, userRole) => {
+    console.log("Setting auth:", isAuthenticated, userRole); // Debugging log
+    return set({ isAuthenticated, userRole });
+  },
   logout: () => set({ isAuthenticated: false, userRole: "guest" }),
 }));

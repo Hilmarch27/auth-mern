@@ -2,8 +2,10 @@
 import { useAuthStore } from "@/zustand/auth-store";
 import axios from "axios";
 
+const apiUrl = import.meta.env.VITE_API_URL;
+
 const api = axios.create({
-  baseURL: "http://localhost:5000",
+  baseURL: `${apiUrl}` || "http://localhost:5000",
   withCredentials: true, // penting untuk mengirim cookies
 });
 
@@ -17,7 +19,7 @@ api.interceptors.response.use(
 
       try {
         // Panggil endpoint refresh token
-        await axios.get("http://localhost:5000/refresh", {
+        await axios.post("http://localhost:5000/auth/refresh", {
           withCredentials: true,
         });
         return api(originalRequest); // Ulangi permintaan asli dengan token yang baru

@@ -18,7 +18,7 @@ model User {
   email String @unique
   name String
   password String
-  role String @default("regular")
+  role String @default("guest")
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 

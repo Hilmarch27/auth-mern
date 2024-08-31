@@ -3,11 +3,11 @@ import api from "../utils/axios-api";
 import { useAuthStore } from "../zustand/auth-store";
 
 export const login = async (credentials: {
-  username: string;
+  email: string;
   password: string;
 }) => {
   try {
-    await api.post("/login", credentials); // Proses login
+    await api.post("/auth/login", credentials); // Proses login
     await fetchUserRole(); // Ambil data user setelah login
   } catch (error) {
     console.error("Login failed:", error);

@@ -1,7 +1,7 @@
-// Protected-route.tsx
-import React from "react";
-import { useAuthStore } from "../zustand/auth-store";
-import { Navigate } from "react-router-dom";
+// ProtectedRoute.tsx
+import { useAuthStore } from "@/zustand/auth-store";
+import React, { useEffect } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 
 interface ProtectedRouteProps {
   children: JSX.Element;
@@ -13,8 +13,20 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   allowedRoles,
 }) => {
   const { isAuthenticated, userRole } = useAuthStore();
+  const navigate = useNavigate();
 
-  if (!isAuthenticated || !allowedRoles.includes(userRole)) {
+  useEffect(() => {
+    // Redirect berdasarkan role jika sudah login
+    if (isAuthenticated) {
+      if (userRole === "admin" && !allowedRoles.includes(userRole)) {
+        navigate("/dashboard");
+      } else if (userRole === "guest" && !allowedRoles.includes(userRole)) {
+        navigate("/home");
+      }
+    }
+  }, [isAuthenticated, userRole, allowedRoles, navigate]);
+
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
