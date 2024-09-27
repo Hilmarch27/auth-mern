@@ -29,14 +29,7 @@ export class AuthController {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production', // Set to true in production
         sameSite: 'strict',
-        maxAge: 4 * 60 * 1000 // 4 minutes (or match the JWT expiration)
-      })
-
-      res.cookie('refreshToken', response.refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 365 * 24 * 60 * 60 * 1000 // 1 year
+        maxAge: 15 * 60 * 1000 // 15 minutes (matching the JWT expiration)
       })
 
       res.status(200).json({

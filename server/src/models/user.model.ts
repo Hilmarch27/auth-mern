@@ -22,13 +22,18 @@ export interface LoginUserRequest {
   password: string
 }
 
+export interface NewTokenResponse {
+  userId: string
+  revoked: boolean
+  accessToken: string
+}
+
 // transform user to user response
-export function toUserResponse (user: User, accessToken?: string, refreshToken?: string): UserResponse {
+export function toUserResponse (user: User, accessToken?: string): UserResponse {
   return {
     name: user.name,
     email: user.email,
     role: user.role,
-    accessToken,
-    refreshToken
+    accessToken
   }
 }

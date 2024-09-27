@@ -14,20 +14,28 @@ datasource db {
 }
 
 model User {
-  user_id String @id @default(uuid())
-  email String @unique
-  name String
-  password String
-  role String @default("guest")
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id            String         @id @default(uuid())
+  email         String         @unique
+  name          String
+  password      String
+  role          String         @default("guest")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  refreshTokens RefreshToken[] // One-to-many relation with RefreshToken
 
+  @@index([id])
   @@map("users")
-  @@index([user_id])
 }
 
-// model Blog {
-//   blog_id String @id @default(uuid())
-//   img_url String
-//   thubnail
-// }
+model RefreshToken {
+  id        Int      @id @default(autoincrement()) // Add primary key for the token table
+  token     String   @unique                      // Token string must be unique
+  expiresAt DateTime                              // Expiration time for the refresh token
+  revoked   Boolean  @default(false)              // Revoked status for refresh token
+  userId    String                                // Foreign key to User model
+  user      User     @relation(fields: [userId], references: [id]) // Relation to User model
+  createdAt DateTime @default(now())              // Creation time of the token
+
+  @@index([token, userId])
+  @@map("refresh_tokens")
+}
