@@ -1,14 +1,14 @@
 import { User } from '@prisma/client'
 
 export interface UserResponse {
-  user_id?: string
+  userId?: string
   name: string
   email: string
   role?: string
   created_at?: Date
   updated_at?: Date
   accessToken?: string
-  refreshToken?: string
+  token?: string
 }
 
 export interface CreateUserRequest {
@@ -25,15 +25,26 @@ export interface LoginUserRequest {
 export interface NewTokenResponse {
   userId: string
   revoked: boolean
-  accessToken: string
+  accessToken?: string
+}
+
+export interface RefreshTokenRequest {
+  refreshToken: string
+}
+
+export interface TokenResponse {
+  userId: string
+  role: string
+  iat: number
+  exp: number
 }
 
 // transform user to user response
-export function toUserResponse (user: User, accessToken?: string): UserResponse {
+export function toUserResponse (user: User, token?: string): UserResponse {
   return {
     name: user.name,
     email: user.email,
     role: user.role,
-    accessToken
+    token
   }
 }

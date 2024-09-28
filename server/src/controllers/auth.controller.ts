@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
-import { CreateUserRequest, LoginUserRequest } from '../models/user.model'
+import { CreateUserRequest, LoginUserRequest, RefreshTokenRequest } from '../models/user.model'
 import { AuthService } from '../services/auth.service'
-import { RequestWithCookies } from '../types/cookies.request'
 
 export class AuthController {
   static async register(req: Request, res: Response, next: NextFunction) {
@@ -40,27 +39,42 @@ export class AuthController {
     }
   }
 
-  static async refresh(req: RequestWithCookies, res: Response, next: NextFunction) {
+  static async refresh(req: Request, res: Response, next: NextFunction) {
     try {
-      const response = await AuthService.refresh(req)
+      // Extract the refresh token from the request body
+      const request: RefreshTokenRequest = req.body as RefreshTokenRequest
 
+      // Call the AuthService to handle the refresh logic
+      const response = await AuthService.refresh(request)
+
+      // Set the new access token as a cookie (or send it in the response body if preferred)
       res.cookie('accessToken', response.accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: process.env.NODE_ENV === 'production', // Set true in production
         sameSite: 'strict',
-        maxAge: 15 * 60 * 1000 // 15 minutes
+        maxAge: 15 * 60 * 1000 // 15 minutes, or match the JWT expiration
       })
 
-      res.cookie('refreshToken', response.refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 365 * 24 * 60 * 60 * 1000 // 1 year
-      })
-
+      // Send back the user ID and access token to the client
       res.status(200).json({
-        data: { name: response.name, email: response.email }
+        data: {
+          userId: response.userId,
+          revoked: response.revoked
+        }
       })
+    } catch (e) {
+      next(e)
+    }
+  }
+
+  static async logout(req: Request, res: Response, next: NextFunction) {
+    try {
+      const request: RefreshTokenRequest = req.body as RefreshTokenRequest
+      // Clear cookies (optional: depending on your app)
+      res.clearCookie('accessToken')
+
+      const response = await AuthService.logout(request)
+      res.status(200).json({ data: response })
     } catch (e) {
       next(e)
     }

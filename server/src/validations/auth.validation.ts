@@ -2,7 +2,7 @@ import { z, ZodType } from 'zod'
 
 export class UserValidation {
   static readonly REGISTER: ZodType = z.object({
-    user_id: z.string().optional(),
+    userId: z.string().optional(),
     name: z.string().min(1),
     email: z.string().min(1),
     role: z.string().optional(),
@@ -17,4 +17,6 @@ export class UserValidation {
   static readonly REFRESH: ZodType = z.object({
     refreshToken: z.string().min(1)
   })
+
+  static readonly USER_ID: ZodType = z.string().min(1) 
 }

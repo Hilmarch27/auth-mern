@@ -6,7 +6,7 @@ const apiUrl = import.meta.env.VITE_API_URL;
 
 const api = axios.create({
   baseURL: `${apiUrl}` || "http://localhost:5000",
-  withCredentials: true, // penting untuk mengirim cookies
+  withCredentials: true, // important for sending cookies
 });
 
 api.interceptors.response.use(

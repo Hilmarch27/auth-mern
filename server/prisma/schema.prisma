@@ -23,12 +23,11 @@ model User {
   updatedAt     DateTime       @updatedAt
   refreshTokens RefreshToken[] // One-to-many relation with RefreshToken
 
-  @@index([id])
+  @@index([id, name, email])
   @@map("users")
 }
 
 model RefreshToken {
-  id        Int      @id @default(autoincrement()) // Add primary key for the token table
   token     String   @unique                      // Token string must be unique
   expiresAt DateTime                              // Expiration time for the refresh token
   revoked   Boolean  @default(false)              // Revoked status for refresh token
