@@ -4,7 +4,7 @@ import { verifyJWT } from '../utils/jwt'
 const deserializeToken = async (req: Request, res: Response, next: NextFunction) => {
   // Ambil accessToken dari cookies
   const accessToken = req.cookies.accessToken
-  console.log('accessToken:', accessToken)
+  console.info('Access Token:', accessToken)
 
   if (!accessToken) {
     return next()

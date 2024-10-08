@@ -14,9 +14,7 @@ export class UserValidation {
     password: z.string().min(1, 'Password must not be empty')
   })
 
-  static readonly REFRESH: ZodType = z.object({
-    refreshToken: z.string().min(1)
-  })
+  static readonly REFRESH: ZodType = z.string().min(1)
 
-  static readonly USER_ID: ZodType = z.string().min(1) 
+  static readonly USER_ID: ZodType = z.string().min(1)
 }

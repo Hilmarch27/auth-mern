@@ -9,6 +9,7 @@ export interface UserResponse {
   updated_at?: Date
   accessToken?: string
   token?: string
+  signature?: string
 }
 
 export interface CreateUserRequest {

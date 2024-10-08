@@ -7,14 +7,12 @@ export class UserController {
   static async get(req: Request, res: Response, next: NextFunction) {
     try {
       const user = res.locals.user as TokenResponse
-      console.log('UserController ~ user:', user)
 
       if (!user) {
         throw new ResponseError(404, 'User Not Found')
       }
 
       const response = await UserService.get(user.userId)
-      console.log('UserController ~ response:', response) // Cek isi response
       res.status(200).json({
         data: response
       })

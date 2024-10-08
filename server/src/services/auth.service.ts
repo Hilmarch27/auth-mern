@@ -13,11 +13,14 @@ import { prismaClient } from '../application/database'
 import { ResponseError } from '../error/reponse.error'
 import { signJWT } from '../utils/jwt'
 import crypto from 'crypto'
+import { encryptData } from '../utils/aes-256'
 
 export class AuthService {
   // Function to generate a refresh token using crypto
   static generateRefreshToken(): string {
-    return crypto.randomBytes(64).toString('hex')
+    const randomToken = crypto.randomBytes(64).toString('hex')
+    const token = crypto.createHash('sha256').update(randomToken).digest('hex')
+    return token
   }
 
   // Clean up expired tokens (remove tokens older than 7 days)
@@ -89,6 +92,14 @@ export class AuthService {
 
     const accessToken = signJWT({ userId: user.id, role: user.role }, { expiresIn: '15m' })
 
+    const expirationTime = Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60 // 7 days expiration
+    const signatureData = {
+      userId: user.id,
+      expiresAt: expirationTime
+    }
+
+    // Encrypt signature data (userId + expiresAt)
+    const signature = encryptData(JSON.stringify(signatureData))
     // Generate refresh token (valid for 7 days)
     const refreshToken = this.generateRefreshToken()
     const expiresAt = new Date()
@@ -105,16 +116,35 @@ export class AuthService {
 
     const response = toUserResponse(user)
     response.accessToken = accessToken
+    response.signature = signature
 
     return response
   }
 
-  static async refresh(request: RefreshTokenRequest): Promise<NewTokenResponse> {
-    const refreshRequest = Validation.validate(UserValidation.REFRESH, request)
+  static async refresh(userId: string): Promise<NewTokenResponse> {
+    const refreshRequest = Validation.validate(UserValidation.REFRESH, userId)
+    console.info('refresh request', refreshRequest)
+    const users = await prismaClient.user.findUnique({
+      where: {
+        id: refreshRequest
+      },
+      include: {
+        refreshTokens: true // Include refresh tokens in the response
+      }
+    })
 
+    if (!users) {
+      throw new ResponseError(404, 'User not found')
+    }
+
+    // Filter refresh tokens yang belum dicabut (revoked === false)
+    const validToken = users.refreshTokens.find((token) => !token.revoked)
+    if (!validToken) {
+      throw new ResponseError(401, 'No valid refresh token found')
+    }
     // Check if the refresh token exists and is valid
     const tokenRecord = await prismaClient.refreshToken.findUnique({
-      where: { token: refreshRequest.refreshToken, revoked: false },
+      where: { token: validToken.token, revoked: false },
       include: {
         user: true // This includes the related User record
       }

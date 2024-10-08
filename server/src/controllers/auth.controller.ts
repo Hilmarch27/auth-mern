@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import { CreateUserRequest, LoginUserRequest, RefreshTokenRequest } from '../models/user.model'
 import { AuthService } from '../services/auth.service'
+import { logger } from '../application/logger'
 
 export class AuthController {
   static async register(req: Request, res: Response, next: NextFunction) {
@@ -28,7 +29,14 @@ export class AuthController {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production', // Set to true in production
         sameSite: 'strict',
-        maxAge: 15 * 60 * 1000 // 15 minutes (matching the JWT expiration)
+        maxAge: 30 * 60 * 1000 // 30 minutes
+      })
+
+      res.cookie('signature', response.signature, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production', // Set to true in production
+        sameSite: 'strict',
+        maxAge: 8 * 24 * 60 * 60 * 1000 // 8 days
       })
 
       res.status(200).json({
@@ -41,18 +49,22 @@ export class AuthController {
 
   static async refresh(req: Request, res: Response, next: NextFunction) {
     try {
-      // Extract the refresh token from the request body
-      const request: RefreshTokenRequest = req.body as RefreshTokenRequest
+      const userId = res.locals.signature
+      logger.info(userId)
+
+      if (!userId) {
+        return res.sendStatus(401) // Unauthorized
+      }
 
       // Call the AuthService to handle the refresh logic
-      const response = await AuthService.refresh(request)
+      const response = await AuthService.refresh(userId)
 
       // Set the new access token as a cookie (or send it in the response body if preferred)
       res.cookie('accessToken', response.accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production', // Set true in production
         sameSite: 'strict',
-        maxAge: 15 * 60 * 1000 // 15 minutes, or match the JWT expiration
+        maxAge: 30 * 60 * 1000 // 30 minutes
       })
 
       // Send back the user ID and access token to the client
